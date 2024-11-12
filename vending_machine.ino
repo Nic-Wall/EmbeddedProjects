@@ -28,13 +28,19 @@ NOTES:
     - with both being followed by "Have a Great Day!", to show the user the transaction has ended
 */
 
+//FINALLY FIGURED IT OUT IT WAS USING PINS 0 AND 1
+//NEED TO RE-FIGURE OUT HOW TO WIRE THE BUTTONS PROPERLY
+
+
+
+
 //Library imports
 #include <LiquidCrystal.h>
 //Declaring const pins
 //PISO (Parallel-In Serial-Out) (to board, buttons, and keypad PISO Input)
-const int data = 0; //Data pin (Q7)
-const int cp = 1; //clock
 const int pl = 2; //latch
+const int cp = 3; //clock
+const int data = 4; //Data pin (Q7)
 /*
   In PISO:
     Buttons
@@ -77,18 +83,17 @@ void loop() {
   byte main_piso = 0x00;
   byte keypad_piso = 0x00;
   //Starting
-  Serial.print("START ");
-  for(int i= 7; i >= 0; i--) {
-    digitalWrite(cp, HIGH);
-    delay(10);
-    digitalWrite(cp, LOW);
-    if(digitalRead(data)) {
+  for(int i= 15; i >= 0; i--) {
+    if(digitalRead(data) == HIGH) {
       bitSet(main_piso, i);
     }
-    Serial.print("\t"); Serial.print(i); Serial.print(": "); Serial.print((main_piso >> i) & 0x01);
+    Serial.print("\t"); Serial.print(i); Serial.print(":"); Serial.print((main_piso >> i) & 0x01);
+    digitalWrite(cp, HIGH);
+    digitalWrite(cp, LOW);
   }
-  Serial.print("\t STOP\n");
-  delay(500);
+  Serial.print(main_piso);
+  Serial.println();
+  delay(1000);
 }
 
 /*
@@ -103,5 +108,5 @@ What I learned:
   - Using buttons with the PISO requires input_pullup resistors 
     + Typically, resistors connected to button input and ground
     + In this case, resistors connected to 5V and button because of the button's connection to the PISO
-
+  - Pins 0 and 1 are not typical pins and therefore cannot be used as one
 */
