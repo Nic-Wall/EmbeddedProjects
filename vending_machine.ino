@@ -31,40 +31,64 @@ NOTES:
 //Library imports
 #include <LiquidCrystal.h>
 //Declaring const pins
-//PISO (Parallel-In Serial-Out)
-const int cp = 1;
-const int pl = 2;
-const int ce = 3;
+//PISO (Parallel-In Serial-Out) (to board, buttons, and keypad PISO Input)
+const int data = 0; //Data pin (Q7)
+const int cp = 1; //clock
+const int pl = 2; //latch
 /*
   In PISO:
-       Keypad
-    0: C1
-    1: C2
-    2: C3
-    3: C4
-       Buttons
-    4: 1 Yuan
-    5: 5 Yuan
-    6: 12 Yuan
-    7: Request Change
+    Buttons
+      4: 1 Yuan
+      5: 5 Yuan
+      6: 12 Yuan
+      7: Request Change
 */
 //Buzzer
 const int buzzer = 6;
 //LCD
-const int backlight_control = 7
+const int backlight_control = 7;
 LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
+long int last_press = -30000; //Backlight starts as off (-30 secs)
 
 void setup() {
   // put your setup code here, to run once:
-  lcd.begin(16, 2);  //Specifies the width and height of the LCD
+  //Setting up the LCD
+  //Specifies the width and height of the LCD
+  lcd.begin(16, 2);
   lcd.print("  Please enter ");
   lcd.setCursor(3, 1);
   lcd.print("change...");
+
+  //PISO (Input) setup
+  pinMode(data, INPUT);
+  pinMode(cp, OUTPUT);
+  pinMode(pl, OUTPUT);
+
+  Serial.begin(115200);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  //Sample PISO Input
+  digitalWrite(pl, LOW);
+  delay(10);
+  digitalWrite(pl, HIGH);
+  //Read main PISO
+  byte main_piso = 0x00;
+  byte keypad_piso = 0x00;
+  //Starting
+  Serial.print("START ");
+  for(int i= 7; i >= 0; i--) {
+    digitalWrite(cp, HIGH);
+    delay(10);
+    digitalWrite(cp, LOW);
+    if(digitalRead(data)) {
+      bitSet(main_piso, i);
+    }
+    Serial.print("\t"); Serial.print(i); Serial.print(": "); Serial.print((main_piso >> i) & 0x01);
+  }
+  Serial.print("\t STOP\n");
+  delay(500);
 }
 
 /*
@@ -74,6 +98,8 @@ What I learned:
     + When PL is LOW the register is sampling, reading the inputs from the pins and storing them
     + When PL is HIGH the register is shifting. It retains the values read from the inputs and allows them to be read one bit at a time.
       + The bits are shifted through by pulsing CP (with the serial clock) HIGH. Starts backwards (i.e. D7, D6, D5, etc.)
+  - How to chain PISO and receive INPUTs from one connected to another by reading the PISO bit repeatedly with a pulse clock pin
+    + Using shared board pins for the latch and clock pin between both PISO registers
   - Using buttons with the PISO requires input_pullup resistors 
     + Typically, resistors connected to button input and ground
     + In this case, resistors connected to 5V and button because of the button's connection to the PISO
