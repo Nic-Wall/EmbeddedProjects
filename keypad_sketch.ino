@@ -6,6 +6,15 @@ Because of this I've fashioned the row finder below to (using bytes to keep it l
 status (after being set to INPUT and LOW), then compares to the rows (0,1,2,3). This allows for a control byte that will
 recognize a mismatch in the default column set and the first row. It's not effecient but it works, is light, and fast.
 Now to include a PISO INPUT register and test it again!
+
+What did I learn?
+  - How to properly use debug messages using both the serial output AND LED's
+  - Memorized bit shifting and a few masks
+  - Bit operations (specifically XOR, AND, and OR)
+  - Using bytes to store bool values, rather than an array, saving memory, allowing for faster operations, and readability
+
+  + The most valuable was using/ finding multiple ways of debugging. I'm proud to have found the issue and provided a 
+    fix WHILE learning something new
 */
 
 
